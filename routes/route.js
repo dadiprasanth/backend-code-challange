@@ -1,12 +1,13 @@
 const express=require("express")
 const users=require("../models/users")
-
+const products=require("../models/products")
 const  jwt = require('jsonwebtoken');
 const bcrypt=require("bcrypt")
 const route=express.Router()
 const secret="sugar"
 module.exports=route
 route.post("/login",async(req,res)=>{
+    console.log(req.body)
     try{
         const finduser=await users.findOne({email:req.body.email})
         if(finduser==null){
@@ -105,6 +106,84 @@ route.post("/register",async(req,res)=>{
             message:e.message
         })
 
+    }
+
+})
+route.get("/login/products",async(req,res)=>{
+    try{
+        console.log(req.headers.authorization)
+        jwt.verify(req.headers.authorization, secret, async function(err, decoded) {
+            if(err){
+                res.status(400).json({
+                    status:"error",
+                    message:"token is not provided"
+                })
+
+            }else{
+                console.log(decoded.data) // bar
+                const checkUser=await users.findOne({_id:decoded.data})
+                if(!checkUser){
+                    const data=await products.find()
+                    res.status(200).json({
+                        status:"sucess",
+                        data
+                    })
+
+                }else{
+                    res.status(400).json({
+                        status:"error",
+                        message:"token is not valid"
+                    })
+                }
+
+            }
+            
+          });
+
+    }catch(e){
+        res.status(400).json({
+            status:"error",
+            message:e
+        })
+    }
+
+})
+route.post("/login/products",async(req,res)=>{
+    try{
+        console.log(req.headers.authorization)
+        jwt.verify(req.headers.authorization, secret, async function(err, decoded) {
+            if(err){
+                res.status(400).json({
+                    status:"error",
+                    message:"token is not provided"
+                })
+
+            }else{
+                console.log(decoded.data) // bar
+                const checkUser=await users.findOne({_id:decoded.data})
+                if(!checkUser){
+                    const data=await products.create(req.body)
+                    res.status(200).json({
+                        status:"sucess",
+                        data
+                    })
+
+                }else{
+                    res.status(400).json({
+                        status:"error",
+                        message:"token is not valid"
+                    })
+                }
+
+            }
+            
+          });
+
+    }catch(e){
+        res.status(400).json({
+            status:"error",
+            message:e
+        })
     }
 
 })
