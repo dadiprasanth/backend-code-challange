@@ -5,4 +5,4 @@ const BlogPost=new Schema({
     password:{trpe:String,required:true}
 })
 const userdata=mongoose.model("userdata",BlogPost)
-module.exports=userdata
+module.exports=userdata;
