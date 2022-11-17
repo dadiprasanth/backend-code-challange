@@ -1,6 +1,7 @@
 const express=require("express")
 const users=require("../models/users")
 const products=require("../models/products")
+const admin=require("../models/admin")
 const  jwt = require('jsonwebtoken');
 const bcrypt=require("bcrypt")
 const route=express.Router()
@@ -122,7 +123,7 @@ route.get("/login/products",async(req,res)=>{
             }else{
                 console.log(decoded.data) // bar
                 const checkUser=await users.findOne({_id:decoded.data})
-                if(!checkUser){
+                if(checkUser){
                     const data=await products.find()
                     res.status(200).json({
                         status:"sucess",
@@ -161,7 +162,7 @@ route.post("/login/products",async(req,res)=>{
             }else{
                 console.log(decoded.data) // bar
                 const checkUser=await users.findOne({_id:decoded.data})
-                if(!checkUser){
+                if(checkUser){
                     const data=await products.create(req.body)
                     res.status(200).json({
                         status:"sucess",
@@ -187,5 +188,125 @@ route.post("/login/products",async(req,res)=>{
     }
 
 })
+route.put("/login/products/:id",async(req,res)=>{
+    try{
+        console.log(req.headers.authorization)
+        jwt.verify(req.headers.authorization, secret, async function(err, decoded) {
+            if(err){
+                res.status(400).json({
+                    status:"error",
+                    message:"token is not provided"
+                })
+
+            }else{
+                console.log(decoded.data) // bar
+                const checkUser=await users.findOne({_id:decoded.data})
+                if(checkUser){
+                    const data=await products.updateOne({_id:req.params.id},req.body)
+                    res.status(200).json({
+                        status:"sucess",
+                        message:"data updated"
+                    })
+
+                }else{
+                    res.status(400).json({
+                        status:"error",
+                        message:"token is not valid"
+                    })
+                }
+
+            }
+            
+          });
+
+    }catch(e){
+        res.status(400).json({
+            status:"error",
+            message:e
+        })
+    }
+
+})
+route.delete("/login/products/:id",async(req,res)=>{
+    try{
+        console.log(req.headers.authorization)
+        jwt.verify(req.headers.authorization, secret, async function(err, decoded) {
+            if(err){
+                res.status(400).json({
+                    status:"error",
+                    message:"token is not provided"
+                })
+
+            }else{
+                console.log(decoded.data) // bar
+                const checkUser=await users.findOne({_id:decoded.data})
+                if(checkUser){
+                    const data=await products.deleteOne({_id:req.params.id})
+                    res.status(200).json({
+                        status:"sucess",
+                        message:"data deleted"
+                    })
+
+                }else{
+                    res.status(400).json({
+                        status:"error",
+                        message:"token is not valid"
+                    })
+                }
+
+            }
+            
+          });
+
+    }catch(e){
+        res.status(400).json({
+            status:"error",
+            message:e
+        })
+    }
+
+})
+route.get("/login/customers",async(req,res)=>{
+    try{
+        console.log(req.headers.authorization)
+        jwt.verify(req.headers.authorization, secret, async function(err, decoded) {
+            if(err){
+                res.status(400).json({
+                    status:"error",
+                    message:"token is not provided"
+                })
+
+            }else{
+                console.log(decoded.data) // bar
+                const checkUser=await users.findOne({_id:decoded.data})
+                const isAdmin=await admin.findOne({email:checkUser.email})
+                if(isAdmin){
+                    const data=await users.find()
+                    res.status(200).json({
+                        status:"status",
+                        data
+                    })
+
+                }else{
+                    res.status(400).json({
+                        status:"error",
+                        message:"He is not admin"
+                    })
+                }
+
+            }
+            
+          });
+
+    }catch(e){
+        res.status(400).json({
+            status:"error",
+            message:e
+        })
+    }
+
+})
+
+
 
 
